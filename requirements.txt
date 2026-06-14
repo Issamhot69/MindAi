@@ -1,0 +1,5 @@
+replicate
+python-dotenv
+fastapi
+uvicorn
+requests
