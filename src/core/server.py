@@ -144,7 +144,7 @@ def studio(token: str = Cookie(default=None)):
     styles_html = "".join([f'<div class="style-card" onclick="selectStyle(\'{k}\')" id="style-{k}"><div class="style-emoji">{v["emoji"]}</div><div class="style-name">{v["nom"]}</div></div>' for k, v in STYLES.items()])
     return f"""<html><head><title>AI Mind Studio</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:sans-serif;background:#0a0a0a;color:white;padding:40px}}.header{{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}}h1{{color:#a78bfa}}.nav{{display:flex;gap:12px;margin-bottom:24px}}.nav a{{background:#1a1a1a;color:#888;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #333}}.nav a:hover{{border-color:#a78bfa;color:#a78bfa}}.user-info{{color:#555;font-size:14px}}.user-info a{{color:#a78bfa;text-decoration:none;margin-left:12px}}.upload-zone{{border:2px dashed #333;border-radius:16px;padding:50px;text-align:center;cursor:pointer;margin-bottom:24px}}.upload-zone:hover{{border-color:#a78bfa}}.upload-zone input{{display:none}}.upload-icon{{font-size:52px;margin-bottom:12px}}.upload-title{{font-size:18px;color:#a78bfa;font-weight:600;margin-bottom:6px}}.upload-sub{{font-size:13px;color:#444}}.preview-box{{display:none;text-align:center;margin-bottom:24px}}.preview-box img{{width:180px;border-radius:12px;border:2px solid #7c3aed}}.styles-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}}.style-card{{background:#1a1a1a;border:2px solid #222;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s}}.style-card:hover,.style-card.selected{{border-color:#a78bfa;background:#1f1a2e}}.style-emoji{{font-size:32px;margin-bottom:8px}}.style-name{{font-size:14px;color:#888}}.style-card.selected .style-name{{color:#a78bfa}}.btn{{width:100%;padding:16px;border-radius:12px;border:none;background:#7c3aed;color:white;font-size:16px;cursor:pointer;margin-bottom:20px}}.btn:disabled{{background:#333;cursor:not-allowed}}.progress-wrap{{background:#1a1a1a;border-radius:10px;overflow:hidden;height:36px;margin-bottom:8px;display:none;position:relative}}.progress-bar{{height:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);width:0%;transition:width 0.3s}}.progress-text{{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:600;color:white}}.status-line{{font-size:14px;color:#a78bfa;margin-bottom:20px;min-height:22px;text-align:center}}.gallery{{display:flex;flex-wrap:wrap;margin-top:24px}}.lightbox{{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99;align-items:center;justify-content:center}}.lightbox img{{max-width:90%;max-height:90%;border-radius:16px}}.lightbox.open{{display:flex}}.change-btn{{background:none;border:1px solid #333;color:#666;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;margin-top:8px}}</style></head><body>
     <div class="header"><h1>🧠 AI Mind Studio</h1><div class="user-info">👤 {user.email} · Plan {user.plan}<a href="/logout">Déconnexion</a></div></div>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imgfile').click()"><input type="file" id="imgfile" accept="image/*" onchange="previewImage(this)"/><div class="upload-icon">📁</div><div class="upload-title">Cliquez pour charger votre photo</div><div class="upload-sub">JPG, PNG — glissez ou cliquez</div></div>
     <div class="preview-box" id="previewBox"><img id="preview" src=""/><p style="color:#a78bfa;font-size:13px;margin-top:8px">✓ Photo chargée</p><button class="change-btn" onclick="document.getElementById('imgfile').click()">Changer</button></div>
     <p style="color:#666;font-size:14px;margin-bottom:12px">Choisissez un style :</p>
@@ -206,7 +206,7 @@ def voix_page(token: str = Cookie(default=None)):
         .audio-box p{color:#a78bfa;margin-bottom:12px}
         audio{width:100%}
     </style></head><body>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>🎤 AI Mind — Voix</h1>
     <p class="sub">Écris un texte, choisis une voix et écoute !</p>
     <textarea id="text" placeholder="Écris ton texte ici...">Bonjour, je suis AI Mind, votre assistant créatif personnel.</textarea>
@@ -358,7 +358,7 @@ def aliens_page(token: str = Cookie(default=None)):
     cards_html = "".join([f'<div class="alien-card" onclick="generateAlien(\'{k}\')"><div class="alien-name">{k.replace("_"," ").title()}</div></div>' for k in ALIEN_PROMPTS.keys()])
 
     return f"""<html><head><title>AI Mind — Aliens</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:sans-serif;background:#0a0a0a;color:white;padding:40px}}h1{{color:#a78bfa;margin-bottom:6px}}.sub{{color:#555;margin-bottom:24px}}.nav{{display:flex;gap:12px;margin-bottom:24px}}.nav a{{background:#1a1a1a;color:#888;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #333}}.nav a:hover{{border-color:#a78bfa;color:#a78bfa}}.aliens-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}}.alien-card{{background:#1a1a1a;border:2px solid #222;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s}}.alien-card:hover{{border-color:#a78bfa;background:#1f1a2e}}.alien-name{{font-size:14px;color:#888}}.alien-card:hover .alien-name{{color:#a78bfa}}.progress-wrap{{background:#1a1a1a;border-radius:10px;overflow:hidden;height:36px;margin-bottom:8px;display:none;position:relative}}.progress-bar{{height:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);width:0%;transition:width 0.3s}}.progress-text{{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:600;color:white}}.status{{font-size:14px;color:#a78bfa;margin-bottom:20px;text-align:center}}.gallery{{display:flex;flex-wrap:wrap}}.lightbox{{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99;align-items:center;justify-content:center}}.lightbox img{{max-width:90%;max-height:90%;border-radius:16px}}.lightbox.open{{display:flex}}</style></head><body>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>👽 AI Mind — Créatures</h1><p class="sub">Génère des créatures extraterrestres uniques</p>
     <div class="aliens-grid">{cards_html}</div>
     <div class="progress-wrap" id="pw"><div class="progress-bar" id="pb"></div><div class="progress-text" id="pt">0%</div></div>
@@ -432,7 +432,7 @@ def video_page(token: str = Cookie(default=None)):
         .gallery{display:flex;flex-wrap:wrap;margin-top:24px}
         .download-btn{display:inline-block;margin-top:10px;padding:10px 20px;background:#1a1a1a;border-radius:8px;color:#a78bfa;text-decoration:none;border:1px solid #7c3aed}
     </style></head><body>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>🎬 AI Mind — Vidéo Lip Sync</h1>
     <p class="sub">Crée une vidéo avec un personnage qui parle vraiment !</p>
     <div class="card"><h3>1️⃣ Upload ton image</h3><input type="file" id="imgfile" accept="image/*"/></div>
@@ -596,7 +596,7 @@ def galerie(token: str = Cookie(default=None)):
         .lightbox.open{{display:flex}}
         .empty{{color:#555;text-align:center;padding:40px;font-size:14px}}
     </style></head><body>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>📁 Ma Galerie</h1>
     <p class="sub">Toutes tes créations AI Mind</p>
     <div class="tabs">
@@ -652,7 +652,7 @@ def film_page(token: str = Cookie(default=None)):
         .result{display:none;text-align:center;margin-top:20px}
         .download-btn{display:inline-block;margin-top:10px;padding:10px 20px;background:#1a1a1a;border-radius:8px;color:#a78bfa;text-decoration:none;border:1px solid #7c3aed}
     </style></head><body>
-    <div class="nav"><a href="/studio">🖼 Images</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>🎥 AI Mind — Créateur de Films</h1>
     <p class="sub">Crée un court-métrage IA complet en quelques clics</p>
 
@@ -816,6 +816,126 @@ def privacy():
     <h2>Contact</h2>
     <p>Pour toute question : contact@aimind.ai</p>
     </body></html>"""
+
+
+@app.get("/generate", response_class=HTMLResponse)
+def generate_page(token: str = Cookie(default=None)):
+    user = get_user_from_token(token) if token else None
+    if not user:
+        return RedirectResponse(url="/login")
+    return """<html><head><title>AI Mind — Générer</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:sans-serif;background:#0a0a0a;color:white;padding:40px}
+        h1{color:#a78bfa;margin-bottom:6px}
+        .sub{color:#555;margin-bottom:24px}
+        .nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+        .nav a{background:#111;color:#888;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #222}
+        .nav a:hover{border-color:#a78bfa;color:#a78bfa}
+        textarea{width:100%;padding:14px;border-radius:12px;border:1px solid #222;background:#111;color:white;font-size:15px;height:100px;margin-bottom:16px}
+        textarea:focus{border-color:#7c3aed;outline:none}
+        .btn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c3aed,#9333ea);color:white;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:16px}
+        .btn:disabled{background:#333;cursor:not-allowed}
+        .spinner{display:inline-block;width:14px;height:14px;border:2px solid #a78bfa;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .status{text-align:center;color:#a78bfa;margin:16px 0;font-size:14px}
+        .result{display:none;text-align:center;margin-top:20px}
+        .result img{max-width:512px;width:100%;border-radius:16px;border:2px solid #7c3aed}
+        .download-btn{display:inline-block;margin-top:10px;padding:10px 20px;background:#1a1a1a;border-radius:8px;color:#a78bfa;text-decoration:none;border:1px solid #7c3aed}
+        .examples{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+        .example{background:#111;border:1px solid #222;padding:8px 14px;border-radius:8px;color:#888;font-size:12px;cursor:pointer}
+        .example:hover{border-color:#7c3aed;color:#a78bfa}
+    </style></head><body>
+    <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
+    <h1>✨ AI Mind — Générer une image</h1>
+    <p class="sub">Décris ce que tu veux voir et AI Mind le crée</p>
+    <p style="color:#555;font-size:13px;margin-bottom:8px">Exemples :</p>
+    <div class="examples">
+        <div class="example" onclick="setPrompt('A beautiful woman in golden light, cinematic portrait, 8K')">Portrait doré</div>
+        <div class="example" onclick="setPrompt('Ancient Egyptian palace with golden columns and torches, epic, 8K')">Palais égyptien</div>
+        <div class="example" onclick="setPrompt('Alien creature with bioluminescent blue skin, large eyes, sci-fi, 8K')">Alien bleu</div>
+        <div class="example" onclick="setPrompt('Cosmic dragon flying through galaxy, nebula wings, epic, 8K')">Dragon cosmique</div>
+        <div class="example" onclick="setPrompt('Futuristic city at night, neon lights, cyberpunk, rain, cinematic, 8K')">Ville futuriste</div>
+        <div class="example" onclick="setPrompt('Deep ocean underwater scene with glowing jellyfish, mysterious, 8K')">Océan profond</div>
+    </div>
+    <textarea id="prompt" placeholder="Décris ton image... Ex: A beautiful sunset over mountains, cinematic, 8K"></textarea>
+    <button class="btn" id="btn" onclick="generate()">✨ Générer l image</button>
+    <div class="status" id="status"></div>
+    <div class="result" id="result">
+        <p style="color:#a78bfa;margin-bottom:12px;font-size:18px">🔥 Image générée !</p>
+        <img id="resultImg" src=""/>
+        <br><a id="downloadBtn" class="download-btn" download>⬇ Télécharger</a>
+    </div>
+    <script>
+        function setPrompt(p){document.getElementById('prompt').value=p;}
+        async function generate(){
+            const prompt=document.getElementById('prompt').value;
+            if(!prompt){alert('Écris une description !');return;}
+            document.getElementById('btn').disabled=true;
+            document.getElementById('status').innerHTML='<span class="spinner"></span>Génération de 4 variations... (2-3 minutes)';
+            const resp=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'prompt='+encodeURIComponent(prompt)});
+            const data=await resp.json();
+            if(data.files){
+                let html='';
+                data.files.forEach(f=>{html+='<div style="display:inline-block;margin:8px"><img src="/images/'+f+'?t='+Date.now()+'" style="width:240px;border-radius:12px;cursor:pointer;border:2px solid #222" onclick="selectImg(this.src)"/><br><a href="/images/'+f+'" download style="color:#a78bfa;font-size:12px">⬇ Télécharger</a></div>';});
+                document.getElementById('result').innerHTML='<p style="color:#a78bfa;margin-bottom:12px;font-size:18px">🔥 4 variations générées !</p>'+html;
+                document.getElementById('result').style.display='block';
+                document.getElementById('status').innerText='✓ Terminé !';
+            } else if(data.file){
+                document.getElementById('result').innerHTML='<img src="/images/'+data.file+'" style="max-width:512px;border-radius:16px"/>';
+                document.getElementById('result').style.display='block';
+                document.getElementById('status').innerText='✓ Terminé !';
+            } else {document.getElementById('status').innerText='❌ Erreur : '+(data.error||'inconnue');}
+            document.getElementById('btn').disabled=false;
+        }
+    </script></body></html>"""
+
+@app.post("/api/generate")
+async def api_generate(prompt: str = Form(...)):
+    import urllib.request, json, time, shutil, random
+    seeds = [random.randint(1, 999999) for _ in range(4)]
+    prompt_ids = []
+    
+    from studio.prompt_enhancer import enhance_prompt
+    prompt = enhance_prompt(prompt)
+    
+    for seed in seeds:
+        workflow = {
+            "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "RealisticVision_V6.safetensors"}},
+            "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": prompt}},
+            "3": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "ugly, deformed, watermark, blurry, low quality, cartoon"}},
+            "4": {"class_type": "EmptyLatentImage", "inputs": {"width": 512, "height": 512, "batch_size": 1}},
+            "5": {"class_type": "KSampler", "inputs": {"model": ["1", 0], "positive": ["2", 0], "negative": ["3", 0], "latent_image": ["4", 0], "seed": seed, "steps": 30, "cfg": 8.0, "sampler_name": "euler", "scheduler": "karras", "denoise": 1.0}},
+            "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
+            "7": {"class_type": "SaveImage", "inputs": {"filename_prefix": "aimind_gen", "images": ["6", 0]}}
+        }
+        data = json.dumps({"prompt": workflow}).encode()
+        req = urllib.request.Request("http://localhost:8188/prompt", data=data, headers={"Content-Type": "application/json"})
+        try:
+            resp = urllib.request.urlopen(req)
+            result = json.loads(resp.read())
+            prompt_ids.append(result.get("prompt_id"))
+        except:
+            return {"error": "ComfyUI non disponible"}
+    
+    files = []
+    for pid in prompt_ids:
+        for i in range(180):
+            time.sleep(1)
+            try:
+                hist = json.loads(urllib.request.urlopen(f"http://localhost:8188/history/{pid}").read())
+                if pid in hist and hist[pid].get("status", {}).get("completed"):
+                    for node_out in hist[pid].get("outputs", {}).values():
+                        if "images" in node_out:
+                            img = node_out["images"][0]
+                            src = os.path.join(os.path.expanduser("~/Documents/ComfyUI/output"), img["filename"])
+                            shutil.copy2(src, f"public/images/{img['filename']}")
+                            files.append(img["filename"])
+                    break
+            except:
+                pass
+    if files:
+        return {"files": files, "status": "ok"}
+    return {"error": "Timeout"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8035)
