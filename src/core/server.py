@@ -369,16 +369,25 @@ def aliens_page(token: str = Cookie(default=None)):
         function openImg(src){{document.getElementById('lbimg').src=src;document.getElementById('lb').classList.add('open');}}
         async function generateAlien(type){{
             document.getElementById('pw').style.display='block';
-            document.getElementById('pb').style.width='0%';
-            document.getElementById('status').innerText='Génération '+type+' en cours...';
-            await fetch('/api/alien?type='+type);
-            const es=new EventSource('/progress');
-            es.onmessage=e=>{{const[pct,status]=e.data.split('|');document.getElementById('pb').style.width=pct+'%';document.getElementById('pt').innerText=pct+'%';if(status==='done'){{es.close();document.getElementById('status').innerText='✓ Terminé !';setTimeout(()=>location.reload(),800);}}}};
+            document.getElementById('pb').style.width='10%';
+            document.getElementById('pt').innerText='10%';
+            document.getElementById('status').innerText='Génération 4 variations de '+type+'... (2-3 minutes)';
+            const resp=await fetch('/api/alien?type='+type);
+            const data=await resp.json();
+            if(data.files){{
+                document.getElementById('pb').style.width='100%';
+                document.getElementById('pt').innerText='100%';
+                document.getElementById('status').innerText='✓ 4 variations générées !';
+                setTimeout(()=>location.reload(),800);
+            }} else {{
+                document.getElementById('status').innerText='❌ Erreur : '+(data.error||'inconnue');
+            }}
         }}
     </script></body></html>"""
 
 @app.get("/api/alien")
 async def api_alien(type: str = "alien_bleu"):
+    import urllib.request, json, time, shutil, random
     ALIEN_PROMPTS = {
         "alien_bleu": "alien creature, bioluminescent blue skin, large black eyes, otherworldly, cinematic, 8K, hyperrealistic",
         "dragon_cosmique": "cosmic dragon, nebula wings, stars in scales, flying through galaxy, epic, cinematic, 8K",
@@ -390,25 +399,47 @@ async def api_alien(type: str = "alien_bleu"):
         "ovni_vivant": "living UFO creature, tentacles, bioluminescent, deep space, cinematic, 8K",
     }
     prompt = ALIEN_PROMPTS.get(type, ALIEN_PROMPTS["alien_bleu"])
-    workflow = {
-        "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "RealisticVision_V6.safetensors"}},
-        "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": prompt}},
-        "3": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "ugly, deformed, watermark, blurry, low quality"}},
-        "4": {"class_type": "EmptyLatentImage", "inputs": {"width": 512, "height": 512, "batch_size": 1}},
-        "5": {"class_type": "KSampler", "inputs": {"model": ["1", 0], "positive": ["2", 0], "negative": ["3", 0], "latent_image": ["4", 0], "seed": 42, "steps": 30, "cfg": 8.0, "sampler_name": "euler", "scheduler": "karras", "denoise": 1.0}},
-        "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
-        "7": {"class_type": "SaveImage", "inputs": {"filename_prefix": f"alien_{type}", "images": ["6", 0]}}
-    }
-    progress_store.update({"value": 0, "status": "Démarrage...", "last_file": ""})
-    def run():
+    seeds = [random.randint(1, 999999) for _ in range(4)]
+    prompt_ids = []
+    
+    for seed in seeds:
+        workflow = {
+            "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "RealisticVision_V6.safetensors"}},
+            "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": prompt}},
+            "3": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "ugly, deformed, watermark, blurry, low quality"}},
+            "4": {"class_type": "EmptyLatentImage", "inputs": {"width": 512, "height": 512, "batch_size": 1}},
+            "5": {"class_type": "KSampler", "inputs": {"model": ["1", 0], "positive": ["2", 0], "negative": ["3", 0], "latent_image": ["4", 0], "seed": seed, "steps": 30, "cfg": 8.0, "sampler_name": "euler", "scheduler": "karras", "denoise": 1.0}},
+            "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
+            "7": {"class_type": "SaveImage", "inputs": {"filename_prefix": f"alien_{type}", "images": ["6", 0]}}
+        }
         data = json.dumps({"prompt": workflow}).encode()
-        req = urllib.request.Request(f"{COMFY_URL}/prompt", data=data, headers={"Content-Type": "application/json"})
-        pid = json.loads(urllib.request.urlopen(req).read()).get("prompt_id")
-        wait_for_result(pid, "russe")
-    threading.Thread(target=run).start()
-    return {"status": "started"}
-
-
+        req = urllib.request.Request("http://localhost:8188/prompt", data=data, headers={"Content-Type": "application/json"})
+        try:
+            resp = urllib.request.urlopen(req)
+            result = json.loads(resp.read())
+            prompt_ids.append(result.get("prompt_id"))
+        except:
+            return {"error": "ComfyUI non disponible"}
+    
+    files = []
+    for pid in prompt_ids:
+        for i in range(180):
+            time.sleep(1)
+            try:
+                hist = json.loads(urllib.request.urlopen(f"http://localhost:8188/history/{pid}").read())
+                if pid in hist and hist[pid].get("status", {}).get("completed"):
+                    for node_out in hist[pid].get("outputs", {}).values():
+                        if "images" in node_out:
+                            img = node_out["images"][0]
+                            src = os.path.join(os.path.expanduser("~/Documents/ComfyUI/output"), img["filename"])
+                            shutil.copy2(src, f"public/images/{img['filename']}")
+                            files.append(img["filename"])
+                    break
+            except:
+                pass
+    
+    progress_store.update({"value": 100, "status": "done", "last_file": files[0] if files else ""})
+    return {"files": files, "status": "ok"}
 
 @app.get("/video", response_class=HTMLResponse)
 def video_page(token: str = Cookie(default=None)):
@@ -462,22 +493,50 @@ def video_page(token: str = Cookie(default=None)):
 
 
 @app.post("/api/lipsync")
-async def api_lipsync(image: UploadFile = File(...), driving: UploadFile = File(...)):
+async def api_lipsync(image: UploadFile = File(...), text: str = Form("Bonjour"), voice: str = Form("fr-FR-HenriNeural")):
     from datetime import datetime
     os.makedirs("public/uploads", exist_ok=True)
+    os.makedirs("public/videos", exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
     img_path = f"public/uploads/lp_img_{ts}.jpg"
-    drv_path = f"public/uploads/lp_drv_{ts}.mp4"
     with open(img_path, "wb") as f:
         f.write(await image.read())
-    with open(drv_path, "wb") as f:
-        f.write(await driving.read())
     
-    from avatar.liveportrait_sync import animate_face
-    result = animate_face(os.path.abspath(img_path), os.path.abspath(drv_path))
-    if result:
-        return {"file": result, "status": "ok"}
-    return {"error": "LivePortrait a échoué"}
+    audio_path = f"public/audio/lp_voice_{ts}.mp3"
+    subprocess.run(["edge-tts", "--text", text, "--voice", voice, "--write-media", audio_path])
+    
+    driving = os.path.expanduser("~/Documents/ComfyUI/custom_nodes/LivePortrait/assets/examples/driving/talking_template.mp4")
+    lp_dir = os.path.expanduser("~/Documents/ComfyUI/custom_nodes/LivePortrait")
+    env = os.environ.copy()
+    env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    
+    subprocess.run(
+        ["python", "inference.py", "-s", os.path.abspath(img_path), "-d", driving],
+        capture_output=True, text=True, cwd=lp_dir, env=env
+    )
+    
+    anim_dir = os.path.join(lp_dir, "animations")
+    anim_videos = sorted(
+        [f for f in os.listdir(anim_dir) if f.endswith(".mp4") and "concat" not in f],
+        key=lambda x: os.path.getmtime(os.path.join(anim_dir, x)), reverse=True
+    )
+    
+    if not anim_videos:
+        return {"error": "LivePortrait a échoué"}
+    
+    anim_path = os.path.join(anim_dir, anim_videos[0])
+    output_path = f"public/videos/lipsync_{ts}.mp4"
+    
+    subprocess.run([
+        "ffmpeg", "-y", "-i", anim_path, "-i", audio_path,
+        "-vf", "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black",
+        "-c:v", "libx264", "-c:a", "aac", "-shortest", "-pix_fmt", "yuv420p", output_path
+    ], capture_output=True)
+    
+    if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
+        return {"file": output_path, "status": "ok"}
+    return {"error": "Erreur assemblage vidéo"}
 
 
 @app.get("/pricing", response_class=HTMLResponse)
