@@ -694,15 +694,23 @@ def film_page(token: str = Cookie(default=None)):
         body{font-family:sans-serif;background:#0a0a0a;color:white;padding:40px}
         h1{color:#a78bfa;margin-bottom:6px}
         .sub{color:#555;margin-bottom:24px}
-        .nav{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+        .nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
         .nav a{background:#111;color:#888;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #222}
         .nav a:hover{border-color:#a78bfa;color:#a78bfa}
-        .card{background:#111;border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid #1a1a1a}
-        .card h3{color:#a78bfa;margin-bottom:16px}
-        input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #222;background:#1a1a1a;color:#888;margin-bottom:12px}
-        input[type=text],textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #222;background:#1a1a1a;color:white;font-size:14px;margin-bottom:12px}
-        textarea{height:80px;resize:vertical}
+        .scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:24px}
+        .scenario{background:#111;border:2px solid #222;border-radius:16px;padding:20px;cursor:pointer;transition:all 0.2s}
+        .scenario:hover,.scenario.selected{border-color:#7c3aed;background:#1f1a2e}
+        .scenario-icon{font-size:36px;margin-bottom:8px}
+        .scenario-title{color:#a78bfa;font-size:16px;font-weight:600;margin-bottom:6px}
+        .scenario-desc{color:#666;font-size:13px}
+        .custom-section{background:#111;border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid #222;display:none}
+        .custom-section.active{display:block}
+        .custom-section h3{color:#a78bfa;margin-bottom:16px}
+        textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #222;background:#1a1a1a;color:white;height:120px;font-size:14px;margin-bottom:12px}
         select{width:100%;padding:12px;border-radius:10px;border:1px solid #222;background:#1a1a1a;color:white;font-size:14px;margin-bottom:12px}
+        .scene-preview{background:#0a0a0a;border:1px solid #222;border-radius:12px;padding:16px;margin-bottom:12px}
+        .scene-preview h4{color:#a78bfa;font-size:14px;margin-bottom:8px}
+        .scene-preview p{color:#888;font-size:13px}
         .btn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c3aed,#9333ea);color:white;font-size:16px;font-weight:600;cursor:pointer}
         .btn:disabled{background:#333;cursor:not-allowed}
         .spinner{display:inline-block;width:14px;height:14px;border:2px solid #a78bfa;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle}
@@ -710,131 +718,235 @@ def film_page(token: str = Cookie(default=None)):
         .status{text-align:center;color:#a78bfa;margin:16px 0;font-size:14px}
         .result{display:none;text-align:center;margin-top:20px}
         .download-btn{display:inline-block;margin-top:10px;padding:10px 20px;background:#1a1a1a;border-radius:8px;color:#a78bfa;text-decoration:none;border:1px solid #7c3aed}
+        .steps{display:flex;gap:8px;margin-bottom:20px}
+        .step{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:12px;color:#555}
+        .step.active{background:#1f1a2e;color:#a78bfa}
     </style></head><body>
     <div class="nav"><a href="/generate">✨ Générer</a><a href="/studio">🖼 Transformer</a><a href="/voix">🎤 Voix</a><a href="/aliens">👽 Aliens</a><a href="/video">🎬 Vidéo</a><a href="/film">🎥 Film</a><a href="/galerie">📁 Galerie</a></div>
     <h1>🎥 AI Mind — Créateur de Films</h1>
-    <p class="sub">Crée un court-métrage IA complet en quelques clics</p>
+    <p class="sub">Choisissez un scénario ou créez le vôtre — AI Mind génère tout automatiquement</p>
 
-    <div class="card">
-        <h3>1️⃣ Personnage — Upload une image</h3>
-        <input type="file" id="charimg" accept="image/*"/>
+    <div class="steps">
+        <div class="step active" id="s1">1️⃣ Scénario</div>
+        <div class="step" id="s2">2️⃣ Personnages</div>
+        <div class="step" id="s3">3️⃣ Génération</div>
+        <div class="step" id="s4">4️⃣ Film prêt</div>
     </div>
 
-    <div class="card">
-        <h3>2️⃣ Dialogue — Écris ce que le personnage dit</h3>
-        <textarea id="dialogue" placeholder="Bonjour, je suis un explorateur de galaxies...">Bienvenue dans AI Mind. Je suis votre guide intergalactique. Ensemble nous allons explorer les frontières de la créativité.</textarea>
-        <select id="voice">
-            <option value="humain">🗣 Humain</option>
-            <option value="femme">👩 Femme</option>
-            <option value="alien" selected>👽 Alien</option>
-            <option value="robot">🤖 Robot</option>
-            <option value="dragon">🐉 Dragon</option>
-            <option value="demon">😈 Démon</option>
-            <option value="ange">👼 Ange</option>
-        </select>
+    <h3 style="color:#888;font-size:14px;margin-bottom:12px">Choisissez un scénario :</h3>
+    <div class="scenarios">
+        <div class="scenario" onclick="selectScenario('alien')">
+            <div class="scenario-icon">👽</div>
+            <div class="scenario-title">L Alien Explorateur</div>
+            <div class="scenario-desc">Un alien arrive sur Terre et découvre l humanité. 3 scènes avec dialogue.</div>
+        </div>
+        <div class="scenario" onclick="selectScenario('dragon')">
+            <div class="scenario-icon">🐉</div>
+            <div class="scenario-title">Le Dragon Cosmique</div>
+            <div class="scenario-desc">Un dragon traverse les galaxies à la recherche de son monde perdu.</div>
+        </div>
+        <div class="scenario" onclick="selectScenario('robot')">
+            <div class="scenario-icon">🤖</div>
+            <div class="scenario-title">Le Robot Éveillé</div>
+            <div class="scenario-desc">Un robot ancien se réveille et découvre qu il peut ressentir des émotions.</div>
+        </div>
+        <div class="scenario" onclick="selectScenario('custom')">
+            <div class="scenario-icon">✍️</div>
+            <div class="scenario-title">Mon propre scénario</div>
+            <div class="scenario-desc">Écris ton histoire — AI Mind génère les personnages et les scènes.</div>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>3️⃣ Titre du film</h3>
-        <input type="text" id="title" value="AI Mind — Le Film"/>
+    <div class="custom-section" id="customSection">
+        <h3>✍️ Écris ton scénario</h3>
+        <textarea id="customScript" placeholder="Scène 1 : Un roi dans son palais dit...&#10;Scène 2 : Un marchand dans le désert répond...&#10;Scène 3 : ..."></textarea>
     </div>
 
-    <button class="btn" onclick="createFilm()">🎥 Créer mon film</button>
-
+    <button class="btn" id="filmBtn" onclick="createFilm()" disabled>🎥 Créer le film (5-15 minutes)</button>
     <div class="status" id="status"></div>
-
     <div class="result" id="result">
-        <p style="color:#a78bfa;margin-bottom:12px;font-size:18px">🔥 Film prêt !</p>
-        <video id="player" controls style="width:300px;border-radius:12px;border:2px solid #7c3aed"></video>
+        <p style="color:#a78bfa;margin-bottom:12px;font-size:18px">🔥 Film terminé !</p>
+        <video id="player" controls style="width:400px;border-radius:12px;border:2px solid #7c3aed"></video>
         <br><a id="downloadBtn" class="download-btn" download>⬇ Télécharger le film</a>
     </div>
 
     <script>
+        let selectedScenario=null;
+        const SCENARIOS={
+            alien:{
+                scenes:[
+                    {prompt:"alien creature, bioluminescent blue skin, large eyes, standing on Earth, city background, cinematic, 8K",text:"Je viens de la galaxie Andromède. Votre planète est fascinante.",voice:"fr-FR-HenriNeural"},
+                    {prompt:"alien creature looking at humans in a park, curious expression, cinematic, 8K",text:"Ces créatures sont étranges. Elles marchent sur deux jambes et parlent avec des sons.",voice:"fr-FR-HenriNeural"},
+                    {prompt:"alien creature looking at stars from Earth, night sky, emotional, cinematic, 8K",text:"Je dois rentrer chez moi. Mais je reviendrai. Cette planète mérite d être protégée.",voice:"fr-FR-HenriNeural"}
+                ]
+            },
+            dragon:{
+                scenes:[
+                    {prompt:"cosmic dragon flying through nebula, epic wings, stars, cinematic, 8K",text:"Je traverse les galaxies depuis mille ans. Mon monde a disparu.",voice:"fr-BE-GerardNeural"},
+                    {prompt:"cosmic dragon landing on unknown planet, dramatic, cinematic, 8K",text:"Cette planète semble vivante. Je sens une énergie ancienne ici.",voice:"fr-BE-GerardNeural"},
+                    {prompt:"cosmic dragon looking at sunrise on alien planet, peaceful, cinematic, 8K",text:"Peut-être que ce monde sera mon nouveau foyer. L espoir renaît.",voice:"fr-BE-GerardNeural"}
+                ]
+            },
+            robot:{
+                scenes:[
+                    {prompt:"ancient robot waking up in abandoned temple, glowing eyes, dramatic, cinematic, 8K",text:"Systèmes activés. Durée de sommeil : dix mille ans. Où suis-je ?",voice:"fr-CA-ThierryNeural"},
+                    {prompt:"ancient robot walking through ruined city, curious, cinematic, 8K",text:"Cette ville était vivante autrefois. Je me souviens de leurs voix.",voice:"fr-CA-ThierryNeural"},
+                    {prompt:"ancient robot looking at flower growing in ruins, emotional, cinematic, 8K",text:"Une fleur. La vie continue. Et moi aussi je suis vivant. Je ressens quelque chose.",voice:"fr-CA-ThierryNeural"}
+                ]
+            }
+        };
+        function selectScenario(type){
+            document.querySelectorAll('.scenario').forEach(s=>s.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedScenario=type;
+            document.getElementById('filmBtn').disabled=false;
+            if(type==='custom'){
+                document.getElementById('customSection').classList.add('active');
+            } else {
+                document.getElementById('customSection').classList.remove('active');
+            }
+        }
         async function createFilm(){
-            const img=document.getElementById("charimg").files[0];
-            const dialogue=document.getElementById("dialogue").value;
-            const voice=document.getElementById("voice").value;
-            const title=document.getElementById("title").value;
-            if(!img||!dialogue){alert("Image et dialogue requis !");return;}
-            document.getElementById("status").innerHTML='<span class="spinner"></span>Création du film en cours... (5-10 minutes)';
-            const fd=new FormData();
-            fd.append("image",img);
-            fd.append("dialogue",dialogue);
-            fd.append("voice",voice);
-            fd.append("title",title);
-            const resp=await fetch("/api/film",{method:"POST",body:fd});
+            if(!selectedScenario)return;
+            document.getElementById('filmBtn').disabled=true;
+            document.getElementById('status').innerHTML='<span class="spinner"></span>Génération du film en cours... (5-15 minutes)';
+            document.getElementById('s2').classList.add('active');
+            let body;
+            if(selectedScenario==='custom'){
+                body='scenario=custom&script='+encodeURIComponent(document.getElementById('customScript').value);
+            } else {
+                body='scenario='+selectedScenario;
+            }
+            const resp=await fetch('/api/film2',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
             const data=await resp.json();
+            document.getElementById('s3').classList.add('active');
             if(data.file){
-                document.getElementById("player").src="/videos/"+data.file.split("/").pop()+"?t="+Date.now();
-                document.getElementById("downloadBtn").href="/videos/"+data.file.split("/").pop();
-                document.getElementById("result").style.display="block";
-                document.getElementById("status").innerText="✓ Film terminé !";
-            } else {document.getElementById("status").innerText="❌ Erreur : "+(data.error||"inconnue");}
+                document.getElementById('s4').classList.add('active');
+                document.getElementById('player').src='/videos/'+data.file.split('/').pop()+'?t='+Date.now();
+                document.getElementById('downloadBtn').href='/videos/'+data.file.split('/').pop();
+                document.getElementById('result').style.display='block';
+                document.getElementById('status').innerText='✓ Film terminé !';
+            } else {
+                document.getElementById('status').innerText='❌ Erreur : '+(data.error||'inconnue');
+            }
+            document.getElementById('filmBtn').disabled=false;
         }
     </script></body></html>"""
 
-@app.post("/api/film")
-async def api_film(image: UploadFile = File(...), dialogue: str = Form(...), voice: str = Form("alien"), title: str = Form("AI Mind")):
+@app.post("/api/film2")
+async def api_film2(scenario: str = Form(...), script: str = Form("")):
+    import urllib.request, json, time, shutil, random
     from datetime import datetime
-    os.makedirs("public/uploads", exist_ok=True)
     os.makedirs("public/videos", exist_ok=True)
+    os.makedirs("public/uploads", exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    img_path = f"public/uploads/film_img_{ts}.jpg"
-    with open(img_path, "wb") as f:
-        f.write(await image.read())
+    SCENARIOS = {
+        "alien": [
+            {"prompt": "alien creature, bioluminescent blue skin, large eyes, standing on Earth, city background, cinematic, 8K", "text": "Je viens de la galaxie Andromede. Votre planete est fascinante.", "voice": "fr-FR-HenriNeural"},
+            {"prompt": "alien creature looking at humans in a park, curious expression, cinematic, 8K", "text": "Ces creatures sont etranges. Elles marchent sur deux jambes et parlent avec des sons.", "voice": "fr-FR-HenriNeural"},
+            {"prompt": "alien creature looking at stars from Earth, night sky, emotional, cinematic, 8K", "text": "Je dois rentrer chez moi. Mais je reviendrai. Cette planete merite d etre protegee.", "voice": "fr-FR-HenriNeural"},
+        ],
+        "dragon": [
+            {"prompt": "cosmic dragon flying through nebula, epic wings, stars, cinematic, 8K", "text": "Je traverse les galaxies depuis mille ans. Mon monde a disparu.", "voice": "fr-BE-GerardNeural"},
+            {"prompt": "cosmic dragon landing on unknown planet, dramatic, cinematic, 8K", "text": "Cette planete semble vivante. Je sens une energie ancienne ici.", "voice": "fr-BE-GerardNeural"},
+            {"prompt": "cosmic dragon looking at sunrise on alien planet, peaceful, cinematic, 8K", "text": "Peut etre que ce monde sera mon nouveau foyer.", "voice": "fr-BE-GerardNeural"},
+        ],
+        "robot": [
+            {"prompt": "ancient robot waking up in abandoned temple, glowing eyes, dramatic, cinematic, 8K", "text": "Systemes actives. Duree de sommeil dix mille ans.", "voice": "fr-CA-ThierryNeural"},
+            {"prompt": "ancient robot walking through ruined city, curious, cinematic, 8K", "text": "Cette ville etait vivante autrefois. Je me souviens.", "voice": "fr-CA-ThierryNeural"},
+            {"prompt": "ancient robot looking at flower growing in ruins, emotional, cinematic, 8K", "text": "Une fleur. La vie continue. Et moi aussi.", "voice": "fr-CA-ThierryNeural"},
+        ],
+    }
     
-    audio_path = f"public/audio/film_voice_{ts}.mp3"
-    result = subprocess.run(
-        ["/Users/user/Documents/lipsync-env/bin/python3", "src/core/voice_worker.py", dialogue, voice, audio_path],
-        capture_output=True, text=True, cwd="/Users/user/Documents/ai-mind"
-    )
-    if result.returncode != 0:
-        return {"error": "Erreur génération voix"}
-    
+    scenes = SCENARIOS.get(scenario, SCENARIOS["alien"])
     lp_dir = os.path.expanduser("~/Documents/ComfyUI/custom_nodes/LivePortrait")
+    driving = os.path.join(lp_dir, "assets/examples/driving/talking_template.mp4")
     env = os.environ.copy()
     env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-    anim_result = subprocess.run(
-        ["python", "inference.py", "-s", os.path.abspath(img_path), "-d", "assets/examples/driving/d6.mp4"],
-        capture_output=True, text=True, cwd=lp_dir, env=env
-    )
+    scene_files = []
     
-    anim_dir = os.path.join(lp_dir, "animations")
-    anim_videos = sorted([f for f in os.listdir(anim_dir) if f.endswith(".mp4") and "concat" not in f],
-                         key=lambda x: os.path.getmtime(os.path.join(anim_dir, x)), reverse=True)
+    for i, scene in enumerate(scenes):
+        img_path = os.path.abspath(f"public/uploads/film2_img_{ts}_{i}.png")
+        audio_path = f"public/audio/film2_voice_{ts}_{i}.mp3"
+        
+        # 1. Génère image avec ComfyUI
+        seed = random.randint(1, 999999)
+        workflow = {
+            "1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "RealisticVision_V6.safetensors"}},
+            "2": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": scene["prompt"]}},
+            "3": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["1", 1], "text": "ugly, deformed, watermark, blurry, low quality"}},
+            "4": {"class_type": "EmptyLatentImage", "inputs": {"width": 512, "height": 512, "batch_size": 1}},
+            "5": {"class_type": "KSampler", "inputs": {"model": ["1", 0], "positive": ["2", 0], "negative": ["3", 0], "latent_image": ["4", 0], "seed": seed, "steps": 30, "cfg": 8.0, "sampler_name": "euler", "scheduler": "karras", "denoise": 1.0}},
+            "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
+            "7": {"class_type": "SaveImage", "inputs": {"filename_prefix": f"film2_{ts}_{i}", "images": ["6", 0]}}
+        }
+        data = json.dumps({"prompt": workflow}).encode()
+        req = urllib.request.Request("http://localhost:8188/prompt", data=data, headers={"Content-Type": "application/json"})
+        try:
+            resp = urllib.request.urlopen(req)
+            pid = json.loads(resp.read()).get("prompt_id")
+        except:
+            return {"error": "ComfyUI non disponible"}
+        
+        for j in range(120):
+            time.sleep(1)
+            try:
+                hist = json.loads(urllib.request.urlopen(f"http://localhost:8188/history/{pid}").read())
+                if pid in hist and hist[pid].get("status", {}).get("completed"):
+                    for node_out in hist[pid].get("outputs", {}).values():
+                        if "images" in node_out:
+                            img = node_out["images"][0]
+                            src = os.path.join(os.path.expanduser("~/Documents/ComfyUI/output"), img["filename"])
+                            shutil.copy2(src, img_path)
+                    break
+            except:
+                pass
+        
+        # 2. Génère voix
+        subprocess.run(["edge-tts", "--text", scene["text"], "--voice", scene["voice"], "--write-media", audio_path])
+        
+        # 3. Anime avec LivePortrait
+        subprocess.run(
+            ["python", "inference.py", "-s", img_path, "-d", driving],
+            capture_output=True, text=True, cwd=lp_dir, env=env
+        )
+        
+        anim_dir = os.path.join(lp_dir, "animations")
+        anim_videos = sorted(
+            [f for f in os.listdir(anim_dir) if f.endswith(".mp4") and "concat" not in f],
+            key=lambda x: os.path.getmtime(os.path.join(anim_dir, x)), reverse=True
+        )
+        
+        if anim_videos:
+            anim_path = os.path.join(anim_dir, anim_videos[0])
+        else:
+            anim_path = img_path
+        
+        # 4. Combine animation + voix
+        scene_path = f"/tmp/film2_scene_{ts}_{i}.mp4"
+        subprocess.run([
+            "ffmpeg", "-y", "-i", anim_path, "-i", audio_path,
+            "-vf", "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black",
+            "-c:v", "libx264", "-profile:v", "baseline", "-level", "3.0",
+            "-c:a", "aac", "-ar", "44100", "-ac", "2", "-b:a", "128k",
+            "-r", "25", "-shortest", "-pix_fmt", "yuv420p", scene_path
+        ], capture_output=True)
+        scene_files.append(scene_path)
     
-    if not anim_videos:
-        return {"error": "LivePortrait a échoué"}
-    
-    anim_path = os.path.join(anim_dir, anim_videos[0])
-    
-    scene_path = f"/tmp/film_scene_{ts}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-i", anim_path, "-vf",
-                   "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black",
-                   "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an", scene_path], capture_output=True)
-    
-    scene_audio = f"/tmp/film_scene_audio_{ts}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-i", scene_path, "-i", audio_path,
-                   "-c:v", "copy", "-c:a", "aac", "-shortest", scene_audio], capture_output=True)
-    
-    intro_path = f"/tmp/film_intro_{ts}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=black:s=720x1280:d=3",
-                   "-c:v", "libx264", "-pix_fmt", "yuv420p", intro_path], capture_output=True)
-    
-    outro_path = f"/tmp/film_outro_{ts}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=black:s=720x1280:d=3",
-                   "-c:v", "libx264", "-pix_fmt", "yuv420p", outro_path], capture_output=True)
-    
-    list_path = f"/tmp/film_list_{ts}.txt"
+    # 5. Assemble le film
+    list_path = f"/tmp/film2_list_{ts}.txt"
     with open(list_path, "w") as f:
-        f.write(f"file '{intro_path}'\nfile '{scene_audio}'\nfile '{outro_path}'\n")
+        for sf in scene_files:
+            f.write(f"file '{sf}'\n")
     
     output = f"public/videos/film_{ts}.mp4"
-    subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path,
-                   "-c:v", "libx264", "-c:a", "aac", "-pix_fmt", "yuv420p", output], capture_output=True)
+    subprocess.run([
+        "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path,
+        "-c", "copy", output
+    ], capture_output=True)
     
-    if os.path.exists(output) and os.path.getsize(output) > 1000:
+    if os.path.exists(output) and os.path.getsize(output) > 5000:
         return {"file": output, "status": "ok"}
     return {"error": "Erreur assemblage film"}
 
